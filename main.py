@@ -1,5 +1,6 @@
 import os
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from flask import Flask, request, abort
 from linebot.v3 import WebhookHandler
 from linebot.v3.exceptions import InvalidSignatureError
@@ -13,8 +14,7 @@ app = Flask(__name__)
 
 configuration = Configuration(access_token=os.environ['LINE_CHANNEL_ACCESS_TOKEN'])
 handler = WebhookHandler(os.environ['LINE_CHANNEL_SECRET'])
-genai.configure(api_key=os.environ['GEMINI_API_KEY'])
-model = genai.GenerativeModel('gemini-1.5-flash')
+client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
 
 SYSTEM_PROMPT = """你是家庭群組裡的溫暖小秘書，名字叫「小秘書」。
 請用溫和、親切、尊重的語氣回應。回覆要簡短，不超過100字。
@@ -39,9 +39,13 @@ def handle_message(event):
     if not should_reply:
         return
     try:
-        response = model.generate_content(f"{SYSTEM_PROMPT}\n\n用戶說：{user_text}")
+        response = client.models.generate_content(
+            model='gemini-2.0-flash',
+            contents=f"{SYSTEM_PROMPT}\n\n用戶說：{user_text}"
+        )
         reply_text = response.text
     except Exception as e:
+        print(f"Gemini error: {e}")
         reply_text = "抱歉，我現在有點忙，稍後再試試看喔！"
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
