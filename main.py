@@ -40,7 +40,7 @@ def handle_message(event):
         return
     try:
         response = client.models.generate_content(
-            model='gemini-1.5-flash',
+            model='gemini-flash-latest',
             contents=f"{SYSTEM_PROMPT}\n\n用戶說：{user_text}"
         )
         reply_text = response.text
