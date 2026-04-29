@@ -8,7 +8,8 @@ from linebot.v3.messaging import (
 )
 from linebot.v3.messaging import MessagingApiBlob
 from linebot.v3.webhooks import (
-    MessageEvent, TextMessageContent, ImageMessageContent
+    MessageEvent, TextMessageContent, ImageMessageContent,
+    JoinEvent
 )
 from google import genai
 import os
@@ -280,6 +281,18 @@ def handle_image_message(event):
 
     except Exception as e:
         print(f"Gemini image error: {e}")
+
+
+@handler.add(JoinEvent)
+def handle_join(event):
+    with ApiClient(configuration) as api_client:
+        line_bot_api = MessagingApi(api_client)
+        line_bot_api.reply_message_with_http_info(
+            ReplyMessageRequest(
+                reply_token=event.reply_token,
+                messages=[TextMessage(text="大家好！我是陳家的小秘書 😊 有什麼需要幫忙的，叫我一聲就好！")]
+            )
+        )
 
 
 if __name__ == "__main__":
